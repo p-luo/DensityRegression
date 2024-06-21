@@ -4,6 +4,7 @@ import array
 import os
 import warnings
 from textwrap import indent
+import sympy as sp
 
 import numpy as np
 from dso.library import Token, PlaceholderConstant, Polynomial
@@ -513,6 +514,19 @@ class Program(object):
         if self.task.task_type != 'binding':
             print("\tExpression:") 
             print("{}\n".format(indent(self.pretty(), '\t  ')))
+            print("\tDifferentated Expression:")
+            # print(self.sympy_expr)
+            # print(self.sympy_expr.free_symbols)
+            derivatives = {symbol: sp.log(self.sympy_expr).diff(symbol) for symbol in self.sympy_expr.free_symbols}
+            # if self.task.task_type != "binding":
+            #     return U.pretty(self.sympy_expr)
+            # else:
+            #     return None
+            for key, value in derivatives.items():
+                print("\tExpression for ") 
+                print("{}\n".format(indent(U.pretty(value), '\t  ')))
+                
+            print(derivatives)
 
     def __repr__(self):
         """Prints the program's traversal"""

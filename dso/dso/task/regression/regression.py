@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from scipy import stats
+from sklearn.metrics.pairwise import rbf_kernel
 
 from dso.task import HierarchicalTask
 from dso.library import Library, Polynomial
@@ -269,6 +271,9 @@ class RegressionTask(HierarchicalTask):
 
         return info
 
+def stein_discrepancy():
+    return 2
+    
 
 def make_regression_metric(name, y_train, *args):
     """
@@ -357,13 +362,17 @@ def make_regression_metric(name, y_train, *args):
 
         # Pearson correlation coefficient
         # Range: [0, 1]
-        "pearson" :     (lambda y, y_hat : scipy.stats.pearsonr(y, y_hat)[0],
+        "pearson" :     (lambda y, y_hat : stats.pearsonr(y, y_hat)[0],
                         0),
 
         # Spearman correlation coefficient
         # Range: [0, 1]
-        "spearman" :    (lambda y, y_hat : scipy.stats.spearmanr(y, y_hat)[0],
-                        0)
+        "spearman" :    (lambda y, y_hat : stats.spearmanr(y, y_hat)[0],
+                        0),
+        
+        "rbf" :         (lambda y, y_hat : rbf_kernel([y], [y_hat])[0][0], 0)
+        
+        # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }
 
     assert name in all_metrics, "Unrecognized reward function name."
@@ -384,7 +393,8 @@ def make_regression_metric(name, y_train, *args):
         "inv_nrmse" : 0.0, #1/(1 + args[0]),
         "fraction" : 0.0,
         "pearson" : 0.0,
-        "spearman" : 0.0
+        "spearman" : 0.0,
+        "rbf" : 0.0
     }
     invalid_reward = all_invalid_rewards[name]
 
@@ -399,7 +409,8 @@ def make_regression_metric(name, y_train, *args):
         "inv_nrmse" : 1.0,
         "fraction" : 1.0,
         "pearson" : 1.0,
-        "spearman" : 1.0
+        "spearman" : 1.0,
+        "rbf" : 1.0
     }
     max_reward = all_max_rewards[name]
 
