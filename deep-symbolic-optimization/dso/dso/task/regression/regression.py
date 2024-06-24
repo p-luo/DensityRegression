@@ -270,9 +270,22 @@ class RegressionTask(HierarchicalTask):
             })
 
         return info
+    
+def u(x, xprime):
+    return 2
+
+def gradient_rbf(p, q):    
+    p = np.asarray(p)
+    q = np.asarray(q)
+    
+    if p.shape != q.shape:
+        raise ValueError("p and q must have the same shape")
+    gamma = 1/len(p)
+    f_value = rbf_kernel(p, q)
+    return (-2 * gamma * (p - q)) * f_value 
 
 def stein_discrepancy():
-    return 2
+    return 0.5
     
 
 def make_regression_metric(name, y_train, *args):
@@ -370,7 +383,9 @@ def make_regression_metric(name, y_train, *args):
         "spearman" :    (lambda y, y_hat : stats.spearmanr(y, y_hat)[0],
                         0),
         
-        "rbf" :         (lambda y, y_hat : rbf_kernel([y], [y_hat])[0][0], 0)
+        "rbf" :         (lambda y, y_hat : rbf_kernel([y], [y_hat])[0][0], 0),
+        
+        "inv_stein" :   (lambda y, y_hat : stein_discrepancy(), 0)
         
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }
@@ -394,7 +409,8 @@ def make_regression_metric(name, y_train, *args):
         "fraction" : 0.0,
         "pearson" : 0.0,
         "spearman" : 0.0,
-        "rbf" : 0.0
+        "rbf" : 0.0,
+        "inv_stein" : 0.0
     }
     invalid_reward = all_invalid_rewards[name]
 
@@ -410,7 +426,8 @@ def make_regression_metric(name, y_train, *args):
         "fraction" : 1.0,
         "pearson" : 1.0,
         "spearman" : 1.0,
-        "rbf" : 1.0
+        "rbf" : 1.0,
+        "inv_stein" : 1.0
     }
     max_reward = all_max_rewards[name]
 

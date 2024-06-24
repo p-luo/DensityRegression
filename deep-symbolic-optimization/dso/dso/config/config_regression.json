@@ -16,8 +16,8 @@
 
       // Metric to be used for the reward function. See regression.py for
       // supported metrics.
-      "metric" : "inv_nrmse",
-      "metric_params" : [1.0], // For inv_nrmse, it's [1.0]
+      "metric" : "inv_stein",
+      "metric_params" : [], // For inv_nrmse, it's "metric_params" : [1.0]
 
       // Optional alternate metric to be used at evaluation time.
       "extra_metric_test" : null,
