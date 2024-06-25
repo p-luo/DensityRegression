@@ -418,7 +418,7 @@ class Trainer():
 
             # Print new best expression
             if self.verbose or self.debug:
-                print("[{}] Training iteration {}, current best R: {:.4f}".format(get_duration(start_time), self.iteration + 1, self.r_best))
+                print("[{}] Training iteration {}, current best R: {:.10f}".format(get_duration(start_time), self.iteration + 1, self.r_best))
                 print("\n\t** New best")
                 self.p_r_best.print_stats()
 
@@ -437,7 +437,7 @@ class Trainer():
             self.done = True
 
         if self.verbose and (self.iteration + 1) % 10 == 0:
-            print("[{}] Training iteration {}, current best R: {:.4f}".format(get_duration(start_time), self.iteration + 1, self.r_best))
+            print("[{}] Training iteration {}, current best R: {:.10f}".format(get_duration(start_time), self.iteration + 1, self.r_best))
 
         if self.debug >= 2:
             print("\nParameter means after iteration {}:".format(self.iteration + 1))

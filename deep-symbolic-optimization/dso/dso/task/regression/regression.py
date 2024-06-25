@@ -1,13 +1,22 @@
 import numpy as np
 import pandas as pd
 from scipy import stats
-from sklearn.metrics.pairwise import rbf_kernel
 
 from dso.task import HierarchicalTask
 from dso.library import Library, Polynomial
 from dso.functions import create_tokens
 from dso.task.regression.dataset import BenchmarkDataset
 from dso.task.regression.polyfit import PolyOptimizer, make_poly_data
+
+from dso.distributions import Cauchy, Gaussian, Gamma, Laplace, T
+from dso.kernels import (
+    PolynomialKernel,
+    GaussianKernel,
+    LaplacianKernel,
+    InverseMultiQuadraticKernel,
+    SteinKernel,
+)
+from dso.discrepancies import MaximumMeanDiscrepancy, KernelSteinDiscrepancy
 
 
 class RegressionTask(HierarchicalTask):
@@ -197,6 +206,7 @@ class RegressionTask(HierarchicalTask):
 
         # Compute estimated values
         y_hat = p.execute(self.X_train)
+        # print("DATA" + str(y_hat))
 
         # For invalid expressions, return invalid_reward
         if p.invalid:
@@ -270,22 +280,27 @@ class RegressionTask(HierarchicalTask):
             })
 
         return info
-    
-def u(x, xprime):
-    return 2
 
-def gradient_rbf(p, q):    
-    p = np.asarray(p)
-    q = np.asarray(q)
-    
-    if p.shape != q.shape:
-        raise ValueError("p and q must have the same shape")
-    gamma = 1/len(p)
-    f_value = rbf_kernel(p, q)
-    return (-2 * gamma * (p - q)) * f_value 
+inverse_multi_quadratic_kernel = InverseMultiQuadraticKernel(c=10, beta=-0.5)
+gaussian_kernel = GaussianKernel(sigma=0.01)
 
-def stein_discrepancy():
-    return 0.5
+gaussian = Gaussian(
+    mu=np.zeros((1, 1)),
+    covariance=np.eye(1),
+)
+t = T(degrees_of_freedom=1, loc=0, scale=1)
+gamma = Gamma(k=1, theta=1)
+
+stein_kernel = SteinKernel(
+    kernel=gaussian_kernel,
+    distribution=gamma,
+)
+
+ksd = KernelSteinDiscrepancy(stein_kernel=stein_kernel)
+
+def stein_discrepancy(data):
+    return max(1e-5, ksd.compute(data.reshape(-1, 1)))
+    # return abs(ksd.compute(np.array(data).reshape(-1, 1)))
     
 
 def make_regression_metric(name, y_train, *args):
@@ -375,17 +390,15 @@ def make_regression_metric(name, y_train, *args):
 
         # Pearson correlation coefficient
         # Range: [0, 1]
-        "pearson" :     (lambda y, y_hat : stats.pearsonr(y, y_hat)[0],
+        "pearson" :     (lambda y, y_hat : max(1e-5,stats.pearsonr(y, y_hat)[0]),
                         0),
 
         # Spearman correlation coefficient
         # Range: [0, 1]
-        "spearman" :    (lambda y, y_hat : stats.spearmanr(y, y_hat)[0],
+        "spearman" :    (lambda y, y_hat : max(1e-5,stats.spearmanr(y, y_hat)[0]),
                         0),
         
-        "rbf" :         (lambda y, y_hat : rbf_kernel([y], [y_hat])[0][0], 0),
-        
-        "inv_stein" :   (lambda y, y_hat : stein_discrepancy(), 0)
+        "inv_stein" :   (lambda y, y_hat : 1/(1 + (stein_discrepancy(y_hat))), 0)
         
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }
@@ -409,7 +422,6 @@ def make_regression_metric(name, y_train, *args):
         "fraction" : 0.0,
         "pearson" : 0.0,
         "spearman" : 0.0,
-        "rbf" : 0.0,
         "inv_stein" : 0.0
     }
     invalid_reward = all_invalid_rewards[name]
@@ -426,7 +438,6 @@ def make_regression_metric(name, y_train, *args):
         "fraction" : 1.0,
         "pearson" : 1.0,
         "spearman" : 1.0,
-        "rbf" : 1.0,
         "inv_stein" : 1.0
     }
     max_reward = all_max_rewards[name]
