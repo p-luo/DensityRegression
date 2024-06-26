@@ -209,10 +209,10 @@ class InverseMultiQuadraticKernel(BaseAutoDiffKernel):
     """
 
     def __init__(self, c: float, beta: float):
-        assert c > 0, f"c > 0, {c=}"
+        assert c > 0, f"c must be greater than 0, but got c={c}"
         self.c = c
 
-        assert (-1 < beta) & (beta < 0), f"beta must be in (-1, 0), {beta=}"
+        assert (-1 < beta) & (beta < 0), f"beta must be in (-1, 0), but got beta={beta}"
         self.beta = beta
 
     def _k_pre_exponent(self, x: np.ndarray, y: np.ndarray) -> float:
