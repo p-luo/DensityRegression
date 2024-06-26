@@ -7,8 +7,9 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jacfwd, jit, tree_util
 
-from dso.distributions import BaseDistribution
+from distributions import BaseDistribution
 
+import sympy as sp
 
 class BaseKernel(ABC):
     """
@@ -208,12 +209,11 @@ class InverseMultiQuadraticKernel(BaseAutoDiffKernel):
     """
 
     def __init__(self, c: float, beta: float):
-        assert c > 0, f"c must be greater than 0, but got c={c}"
+        assert c > 0, f"c > 0, {c=}"
         self.c = c
 
-        assert -1 < beta < 0, f"beta must be in (-1, 0), but got beta={beta}"
+        assert (-1 < beta) & (beta < 0), f"beta must be in (-1, 0), {beta=}"
         self.beta = beta
-
 
     def _k_pre_exponent(self, x: np.ndarray, y: np.ndarray) -> float:
         return self.c**2 + _l2_squared(x, y)
@@ -275,7 +275,43 @@ class SteinKernel(BaseAutoDiffKernel):
     @classmethod
     def tree_unflatten(cls, aux_data: Dict[str, Any], children: Tuple) -> SteinKernel:
         return cls(*children, **aux_data)
+    
+class DSOSteinKernel(BaseAutoDiffKernel):
+    
+    def __init__(self, distribution: sp.core.add.Add, kernel: BaseKernel): #Here, distribution is a sympy object
+        self.distribution = distribution
+        self.kernel = kernel
 
+    def score(self, p: np.ndarray) -> np.ndarray:
+        symbols_in_expr = sorted(list(self.distribution.free_symbols), key=lambda s: s.name)
+        ell = sp.log(self.distribution) #log-likelihood
+        derivatives = {symbol: ell.diff(symbol) for symbol in symbols_in_expr}
+        point = {symbol: value for symbol, value in zip(symbols_in_expr, p)}
+        vec_float = np.vectorize(float)
+        return vec_float(np.asarray([derivative.subs(point) for derivative in derivatives.values()]))
+        
+    # @jit
+    def k(self, x: np.ndarray, y: np.ndarray) -> float:
+        
+        a1 = self.kernel.k(x, y) * jnp.dot(
+            self.score(x).T, self.score(y)
+        )
+        a2 = jnp.dot(self.score(y).T, self.kernel.dk_dx(x, y))
+        a3 = jnp.dot(self.score(x).T, self.kernel.dk_dy(x, y))
+        a4 = jnp.trace(self.kernel.dk_dx_dy(x, y))
+        return a1 + a2 + a3 + a4
+
+    def tree_flatten(self) -> Tuple[Tuple, Dict[str, Any]]:
+        children = ()
+        aux_data = {
+            "distribution": self.distribution,
+            "kernel": self.kernel,
+        }
+        return children, aux_data
+
+    @classmethod
+    def tree_unflatten(cls, aux_data: Dict[str, Any], children: Tuple) -> SteinKernel:
+        return cls(*children, **aux_data)
 
 for KernelClass in [
     PolynomialKernel,
@@ -283,6 +319,7 @@ for KernelClass in [
     LaplacianKernel,
     InverseMultiQuadraticKernel,
     SteinKernel,
+    DSOSteinKernel
 ]:
     tree_util.register_pytree_node(
         KernelClass,

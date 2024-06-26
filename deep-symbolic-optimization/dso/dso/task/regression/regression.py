@@ -291,15 +291,22 @@ gaussian = Gaussian(
 t = T(degrees_of_freedom=1, loc=0, scale=1)
 gamma = Gamma(k=1, theta=1)
 
+#but distribution should be x, the data, because in practice you don't know the true distribution of data
+
 stein_kernel = SteinKernel(
     kernel=gaussian_kernel,
-    distribution=gamma,
+    distribution=gamma, #This is the candidate distribution
 )
 
 ksd = KernelSteinDiscrepancy(stein_kernel=stein_kernel)
 
-def stein_discrepancy(data):
-    return max(1e-5, ksd.compute(data.reshape(-1, 1)))
+def stein_discrepancy(data): #expr = f(x)
+    # stein_kernel = SteinKernel(
+    # kernel=gaussian_kernel,
+    # distribution=expr, #This is the candidate distribution
+    # )
+    # ksd = KernelSteinDiscrepancy(stein_kernel=stein_kernel)
+    return ksd.compute(data.reshape(-1, 1))
     # return abs(ksd.compute(np.array(data).reshape(-1, 1)))
     
 
@@ -398,7 +405,7 @@ def make_regression_metric(name, y_train, *args):
         "spearman" :    (lambda y, y_hat : max(1e-5,stats.spearmanr(y, y_hat)[0]),
                         0),
         
-        "inv_stein" :   (lambda y, y_hat : 1/(1 + (stein_discrepancy(y_hat))), 0)
+        "inv_stein" :   (lambda y, y_hat : 1/(1 + (stein_discrepancy(y))), 0)
         
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }

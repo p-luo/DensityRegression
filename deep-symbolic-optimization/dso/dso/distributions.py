@@ -499,6 +499,9 @@ class Mixture(BaseAutoDiffDistribution):
     def tree_unflatten(cls, aux_data: Dict[str, Any], children: Tuple) -> Mixture:
         return cls(*children, **aux_data)
 
+# class Custom(BaseAutoDiffDistribution):
+#     take f
+#     def logf
 
 for DistributionClass in [
     Gaussian,

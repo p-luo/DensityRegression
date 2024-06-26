@@ -7,8 +7,8 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jit, tree_util, vmap
 
-from dso.distributions import BaseDistribution
-from dso.kernels import BaseKernel, SteinKernel
+from distributions import BaseDistribution
+from kernels import BaseKernel, SteinKernel
 
 
 @partial(jit, static_argnames=["kernel"])
