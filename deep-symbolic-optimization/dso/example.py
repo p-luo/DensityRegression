@@ -1,0 +1,47 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import jax.numpy as jnp
+from jax import vmap
+
+from distributions import Cauchy, Gaussian, Gamma, Laplace, T
+from kernels import *
+from discrepancies import MaximumMeanDiscrepancy, KernelSteinDiscrepancy
+
+import sympy as sp
+
+#initializing parameters of normal distribution
+mean_vec = np.zeros((1, 1))
+cov_matrix = np.eye(1)
+
+#defining some kernels, from distributiondiscrepancies/kernels.py
+inverse_multi_quadratic_kernel = InverseMultiQuadraticKernel(c=10, beta=-0.5)
+gaussian_kernel = GaussianKernel(sigma=0.01)
+
+#Defining the Gaussian distribution from distributiondiscrepancies/distributions.py
+gaussian = Gaussian(
+    mu=np.zeros((1, 1)),
+    covariance=np.eye(1),
+)
+
+#Initializing the Stein Kernel from kernels.py
+stein_kernel = SteinKernel(
+    kernel=gaussian_kernel,
+    distribution=gaussian
+)
+
+#This evaluates u_q(a,b), where the Stein Discrepancy S(p,q)=E_{x,y~p}[u_q(x,y)]
+a = np.asarray([1.])
+b = np.asarray([4.])
+print(stein_kernel.k(a, b)) 
+
+#Setting up Gaussian density; the normalization constant doesn't matter in the computation
+x = sp.symbols('x')
+density = sp.exp(-(x**2) / 2) 
+
+#Defining the DSO-compatible Stein Kernel, which takes as parameters a kernel from kernels.py, and a sympy expression (distribution) 
+DSOstein_kernel = DSOSteinKernel(
+    kernel=gaussian_kernel,
+    distribution=density
+)
+
+print(DSOstein_kernel.k(a, b)) #Should print the same thing
