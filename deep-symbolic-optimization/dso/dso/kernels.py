@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jacfwd, jit, tree_util
 
-from distributions import BaseDistribution
+from dso.distributions import BaseDistribution
 
 import sympy as sp
 
@@ -285,12 +285,11 @@ class DSOSteinKernel(BaseAutoDiffKernel):
     def score(self, p: np.ndarray) -> np.ndarray:
         symbols_in_expr = sorted(list(self.distribution.free_symbols), key=lambda s: s.name)
         ell = sp.log(self.distribution) #log-likelihood
-        derivatives = {symbol: ell.diff(symbol) for symbol in symbols_in_expr}
-        point = {symbol: value for symbol, value in zip(symbols_in_expr, p)}
-        vec_float = np.vectorize(float)
-        return vec_float(np.asarray([derivative.subs(point) for derivative in derivatives.values()]))
+        derivatives = {symbol: sp.lambdify([symbols_in_expr], ell.diff(symbol), 'numpy') for symbol in symbols_in_expr}
+        evaluated_derivatives = [derivatives[symbol](p) for symbol in symbols_in_expr]
+        return jnp.asarray(evaluated_derivatives)
         
-    # @jit
+    @jit
     def k(self, x: np.ndarray, y: np.ndarray) -> float:
         
         a1 = self.kernel.k(x, y) * jnp.dot(

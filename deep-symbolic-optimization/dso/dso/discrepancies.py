@@ -7,8 +7,8 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jit, tree_util, vmap
 
-from distributions import BaseDistribution
-from kernels import BaseKernel, SteinKernel
+from dso.distributions import BaseDistribution
+from dso.kernels import BaseKernel, SteinKernel,DSOSteinKernel
 
 
 @partial(jit, static_argnames=["kernel"])
@@ -129,6 +129,59 @@ class MaximumMeanDiscrepancy:
         """
         return cls(*children, **aux_data)
 
+class DSOKernelSteinDiscrepancy:
+    def __init__(self, DSO_stein_kernel: DSOSteinKernel):
+        """
+        Methods relating to the Kernel Stein Discrepancy
+
+        :param stein_kernel: the stein kernel function
+        """
+        self.DSO_stein_kernel = DSO_stein_kernel
+
+    @jit
+    def compute(self, x: np.ndarray) -> float:
+        """
+        Computes the Kernel Stein Discrepancy defined as:
+            KSD^2 = E[k_p(X,X')]
+        where:
+            E is the expectation
+        and
+            k_p is the Stein kernel function
+        and
+            X, X' ~ Q distribution.
+
+        :param x: ndarray of shape (n_samples, n_dimensions)
+        :return: the unbiased estimate of the kernel stein discrepancy
+        """
+        xx = _gram(self.DSO_stein_kernel.k, x, x)
+        return jnp.mean(_remove_diagonal(xx)).reshape()
+    
+    def tree_flatten(self) -> Tuple[Tuple, Dict[str, Any]]:
+        """
+        To have JIT-compiled class methods by registering the type as a custom PyTree object.
+        As referenced in:
+        https://jax.readthedocs.io/en/latest/faq.html#strategy-3-making-customclass-a-pytree
+
+        :return: A tuple containing dynamic and a dictionary containing static values
+        """
+        children = ()
+        aux_data = {"DSO_stein_kernel": self.DSO_stein_kernel}
+        return children, aux_data
+
+    @classmethod
+    def tree_unflatten(
+        cls, aux_data: Dict[str, Any], children: Tuple
+    ) -> DSOKernelSteinDiscrepancy:
+        """
+        To have JIT-compiled class methods by registering the type as a custom PyTree object.
+        As referenced in:
+        https://jax.readthedocs.io/en/latest/faq.html#strategy-3-making-customclass-a-pytree
+
+        :param aux_data: tuple containing dynamic values
+        :param children: dictionary containing dynamic values
+        :return: Class instance
+        """
+        return cls(*children, **aux_data)
 
 class KernelSteinDiscrepancy:
     def __init__(self, stein_kernel: SteinKernel):
@@ -278,6 +331,7 @@ class FisherDivergence:
 for DivergenceClass in [
     MaximumMeanDiscrepancy,
     KernelSteinDiscrepancy,
+    DSOKernelSteinDiscrepancy,
     FisherDivergence,
 ]:
 

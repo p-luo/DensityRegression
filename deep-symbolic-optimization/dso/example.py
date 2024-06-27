@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import jax.numpy as jnp
 from jax import vmap
 
-from distributions import Cauchy, Gaussian, Gamma, Laplace, T
-from kernels import *
-from discrepancies import MaximumMeanDiscrepancy, KernelSteinDiscrepancy
+from dso.distributions import Gaussian
+from dso.kernels import *
+from dso.discrepancies import MaximumMeanDiscrepancy, KernelSteinDiscrepancy, DSOKernelSteinDiscrepancy
 
 import sympy as sp
 
@@ -45,3 +45,14 @@ DSOstein_kernel = DSOSteinKernel(
 )
 
 print(DSOstein_kernel.k(a, b)) #Should print the same thing
+
+#Defining Discrepancy objects and obtaining unbiased estimates of E_{x,y~p}[u_q(x,y)]
+print("Unbiased estimates of E_{x,y~p}[u_q(x,y)]:")
+data = np.asarray([1., 2., 3., 4.]).reshape(-1, 1)
+s = KernelSteinDiscrepancy(stein_kernel = stein_kernel)
+print("Stein Kernel from the package")
+print(s.compute(data))
+
+ss = DSOKernelSteinDiscrepancy(DSO_stein_kernel = DSOstein_kernel)
+print("DSO Stein Kernel, with Sympy compatibility")
+print(ss.compute(data)) #Should print the same thing
