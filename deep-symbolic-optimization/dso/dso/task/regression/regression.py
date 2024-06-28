@@ -15,8 +15,9 @@ from dso.kernels import (
     LaplacianKernel,
     InverseMultiQuadraticKernel,
     SteinKernel,
+    DSOSteinKernel
 )
-from dso.discrepancies import MaximumMeanDiscrepancy, KernelSteinDiscrepancy
+from dso.discrepancies import MaximumMeanDiscrepancy, KernelSteinDiscrepancy, DSOKernelSteinDiscrepancy
 
 
 class RegressionTask(HierarchicalTask):
@@ -143,6 +144,7 @@ class RegressionTask(HierarchicalTask):
         Configure train/test reward metrics.
         """
         self.threshold = threshold
+        self.metric_name = metric
         self.metric, self.invalid_reward, self.max_reward = make_regression_metric(metric, self.y_train, *metric_params)
         self.extra_metric_test = extra_metric_test
         if extra_metric_test is not None:
@@ -205,7 +207,7 @@ class RegressionTask(HierarchicalTask):
                 p.traversal[p.poly_pos] = self.poly_optimizer.fit(self.X_train, poly_data_y)
 
         # Compute estimated values
-        y_hat = p.execute(self.X_train)
+        y_hat = p.execute(self.X_train) #Maybe if inv_stein, then we don't need to compute this -- structure if else such that if inv_stein this line gets skipped
         # print("DATA" + str(y_hat))
 
         # For invalid expressions, return invalid_reward
@@ -225,8 +227,14 @@ class RegressionTask(HierarchicalTask):
         if optimizing:
             return self.const_opt_metric(self.y_train, y_hat)
 
-        # Compute metric
-        r = self.metric(self.y_train, y_hat)
+        #Compute metric
+        if self.metric_name == "inv_stein":
+            candidate = p.sympy_expr
+            if candidate.is_constant():
+                return -1.0
+            r = self.metric(self.y_train, candidate)
+        else:
+            r = self.metric(self.y_train, y_hat)
 
         # Direct reward noise
         # For reward_noise_type == "r", success can for ~max_reward metrics be
@@ -281,33 +289,18 @@ class RegressionTask(HierarchicalTask):
 
         return info
 
-inverse_multi_quadratic_kernel = InverseMultiQuadraticKernel(c=10, beta=-0.5)
-gaussian_kernel = GaussianKernel(sigma=0.01)
-
-gaussian = Gaussian(
-    mu=np.zeros((1, 1)),
-    covariance=np.eye(1),
-)
-t = T(degrees_of_freedom=1, loc=0, scale=1)
-gamma = Gamma(k=1, theta=1)
-
-#but distribution should be x, the data, because in practice you don't know the true distribution of data
-
-stein_kernel = SteinKernel(
-    kernel=gaussian_kernel,
-    distribution=gamma, #This is the candidate distribution
-)
-
-ksd = KernelSteinDiscrepancy(stein_kernel=stein_kernel)
-
-def stein_discrepancy(data): #expr = f(x)
-    # stein_kernel = SteinKernel(
-    # kernel=gaussian_kernel,
-    # distribution=expr, #This is the candidate distribution
-    # )
-    # ksd = KernelSteinDiscrepancy(stein_kernel=stein_kernel)
-    return ksd.compute(data.reshape(-1, 1))
-    # return abs(ksd.compute(np.array(data).reshape(-1, 1)))
+#need to figure out how to access expr...
+def stein_discrepancy(data, expr):
+    gaussian_kernel = GaussianKernel(sigma=0.01) 
+    DSOstein_kernel = DSOSteinKernel(
+        kernel=gaussian_kernel,
+        distribution=expr
+    )
+    DSOksd = DSOKernelSteinDiscrepancy(DSO_stein_kernel = DSOstein_kernel)
+    y = data.reshape(-1, 1)
+    print("shape of yhin stein_discrepancy function, regression.py")
+    print(y)
+    return DSOksd.compute(y)
     
 
 def make_regression_metric(name, y_train, *args):
@@ -405,7 +398,7 @@ def make_regression_metric(name, y_train, *args):
         "spearman" :    (lambda y, y_hat : max(1e-5,stats.spearmanr(y, y_hat)[0]),
                         0),
         
-        "inv_stein" :   (lambda y, y_hat : 1/(1 + (stein_discrepancy(y))), 0)
+        "inv_stein" :   (lambda y, expr : 1/(1 + (stein_discrepancy(y, expr))), 0) #Should maybe put a parameter in here, like inv_nrmse does
         
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }

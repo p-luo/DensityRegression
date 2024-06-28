@@ -278,20 +278,39 @@ class SteinKernel(BaseAutoDiffKernel):
     
 class DSOSteinKernel(BaseAutoDiffKernel):
     
-    def __init__(self, distribution: sp.core.add.Add, kernel: BaseKernel): #Here, distribution is a sympy object
+    def __init__(self, distribution: sp.core.add.Add, kernel: BaseKernel): #Here, 'distribution' is a sympy object
         self.distribution = distribution
         self.kernel = kernel
 
     def score(self, p: np.ndarray) -> np.ndarray:
+        jax_modules = {
+            'sin': jnp.sin,
+            'cos': jnp.cos,
+            'tan': jnp.tan,
+            'exp': jnp.exp,
+            'log': jnp.log,
+            'sqrt': jnp.sqrt,
+            'pi': jnp.pi,
+            'Abs': jnp.abs,
+            'sign': jnp.sign,
+            'Min': jnp.minimum,
+            'Max': jnp.maximum,
+            'ceiling': jnp.ceil,
+            'floor': jnp.floor,
+            'pow': jnp.power,
+            'mod': jnp.mod,
+            # Add more mappings as needed
+        }
         symbols_in_expr = sorted(list(self.distribution.free_symbols), key=lambda s: s.name)
         ell = sp.log(self.distribution) #log-likelihood
-        derivatives = {symbol: sp.lambdify([symbols_in_expr], ell.diff(symbol), 'numpy') for symbol in symbols_in_expr}
+        derivatives = {symbol: sp.lambdify([symbols_in_expr], ell.diff(symbol), modules = jax_modules) for symbol in symbols_in_expr}
         evaluated_derivatives = [derivatives[symbol](p) for symbol in symbols_in_expr]
+        # print("evaluated derivatives in kernels.py")
+        # print(evaluated_derivatives)
         return jnp.asarray(evaluated_derivatives)
         
     @jit
     def k(self, x: np.ndarray, y: np.ndarray) -> float:
-        
         a1 = self.kernel.k(x, y) * jnp.dot(
             self.score(x).T, self.score(y)
         )
