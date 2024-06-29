@@ -6,18 +6,21 @@
       // This can either be (1) the name of the benchmark dataset (see
       // benchmarks.csv for a list of supported benchmarks) or (2) a path to a
       // CSV file containing the data.
+      // "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1).csv",
       "dataset" : "Nguyen-1",
 
       // To customize a function set, edit this! See functions.py for a list of
       // supported functions. Note "const" will add placeholder constants that
       // will be optimized within the training loop. This will considerably
       // increase runtime.
-      "function_set": ["add", "sub", "mul", "div", "sin", "cos", "exp", "log"],
+      "function_set": ["add", "sub", "mul", "div", "exp", "log"], //Removed sin and cos
 
       // Metric to be used for the reward function. See regression.py for
       // supported metrics.
-      "metric" : "inv_nrmse",
-      "metric_params" : [1.0], // For inv_nrmse, it's "metric_params" : [1.0]
+      // "metric" : "inv_nrmse",
+      // "metric_params" : [1.0], // For inv_nrmse, it's "metric_params" : [1.0]
+      "metric" : "inv_stein",
+      "metric_params" : [], // For inv_nrmse, it's "metric_params" : [1.0]
 
       // Optional alternate metric to be used at evaluation time.
       "extra_metric_test" : null,

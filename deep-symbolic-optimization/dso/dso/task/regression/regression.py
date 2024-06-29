@@ -230,10 +230,13 @@ class RegressionTask(HierarchicalTask):
         #Compute metric
         if self.metric_name == "inv_stein":
             candidate = p.sympy_expr
+            # print("expression:")
+            print(candidate)
             if candidate.is_constant():
                 return -1.0
-            r = self.metric(self.y_train, candidate)
+            r = self.metric(self.y_train, y_hat, candidate)
         else:
+            print(p.sympy_expr)
             r = self.metric(self.y_train, y_hat)
 
         # Direct reward noise
@@ -246,7 +249,8 @@ class RegressionTask(HierarchicalTask):
             r += self.rng.normal(loc=0, scale=self.scale)
             if self.normalize_variance:
                 r /= np.sqrt(1 + 12 * self.scale ** 2)
-
+        # print("(made it to end of reward_function, regression,py) r:")
+        # print(r)
         return r
 
     def evaluate(self, p):
@@ -289,7 +293,6 @@ class RegressionTask(HierarchicalTask):
 
         return info
 
-#need to figure out how to access expr...
 def stein_discrepancy(data, expr):
     gaussian_kernel = GaussianKernel(sigma=0.01) 
     DSOstein_kernel = DSOSteinKernel(
@@ -298,8 +301,6 @@ def stein_discrepancy(data, expr):
     )
     DSOksd = DSOKernelSteinDiscrepancy(DSO_stein_kernel = DSOstein_kernel)
     y = data.reshape(-1, 1)
-    print("shape of yhin stein_discrepancy function, regression.py")
-    print(y)
     return DSOksd.compute(y)
     
 
@@ -398,7 +399,7 @@ def make_regression_metric(name, y_train, *args):
         "spearman" :    (lambda y, y_hat : max(1e-5,stats.spearmanr(y, y_hat)[0]),
                         0),
         
-        "inv_stein" :   (lambda y, expr : 1/(1 + (stein_discrepancy(y, expr))), 0) #Should maybe put a parameter in here, like inv_nrmse does
+        "inv_stein" :   (lambda y, y_hat, expr : 1/(1 + (stein_discrepancy(y, expr))), 0) #Should maybe put a parameter in here, like inv_nrmse does
         
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }

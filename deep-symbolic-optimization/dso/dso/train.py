@@ -212,7 +212,7 @@ class Trainer():
             self.print_var_means()
 
         ewma = None if self.b_jumpstart else 0.0 # EWMA portion of baseline
-
+        
         start_time = time.time()
         if self.verbose:
             print("-- RUNNING ITERATIONS START -------------")
@@ -223,7 +223,7 @@ class Trainer():
         n_extra = 0
         # Record previous cache before new samples are added by from_tokens
         s_history = list(Program.cache.keys())
-
+        
         # Construct the actions, obs, priors, and programs
         # Shape of actions: (batch_size, max_length)
         # Shape of obs: (batch_size, obs_dim, max_length)
@@ -237,7 +237,7 @@ class Trainer():
             actions, obs, priors, programs = override
             for p in programs:
                 Program.cache[p.str] = p
-
+                
         # Extra samples, previously already contained in cache,
         # that were geneated during the attempt to get
         # batch_size new samples for expensive reward evaluation
@@ -289,7 +289,7 @@ class Trainer():
 
         # Compute rewards (or retrieve cached rewards)
         r = np.array([p.r for p in programs])
-
+        
         # Back up programs to save them properly later
         controller_programs = programs.copy() if self.logger.save_token_count else None
 
@@ -298,7 +298,7 @@ class Trainer():
         s           = [p.str for p in programs] # Str representations of Programs
         on_policy   = np.array([p.originally_on_policy for p in programs])
         invalid     = np.array([p.invalid for p in programs], dtype=bool)
-
+        
         if self.logger.save_positional_entropy:
             positional_entropy = np.apply_along_axis(empirical_entropy, 0, actions)
 
@@ -316,7 +316,7 @@ class Trainer():
         actions_full = actions
         invalid_full = invalid
         r_max = np.max(r)
-
+        
         """
         Apply risk-seeking policy gradient: compute the empirical quantile of
         rewards and filter out programs with lesser reward.
@@ -369,7 +369,6 @@ class Trainer():
 
         # Clip bounds of rewards to prevent NaNs in gradient descent
         r = np.clip(r, -1e6, 1e6)
-
         # Compute baseline
         # NOTE: pg_loss = tf.reduce_mean((self.r - self.baseline) * neglogp, name="pg_loss")
         if self.baseline == "ewma_R":
@@ -448,6 +447,7 @@ class Trainer():
 
         # Increment the iteration counter
         self.iteration += 1
+        print("END OF FN")
 
     def save(self, save_path):
         """

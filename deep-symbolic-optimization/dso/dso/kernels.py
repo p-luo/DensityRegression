@@ -305,8 +305,6 @@ class DSOSteinKernel(BaseAutoDiffKernel):
         ell = sp.log(self.distribution) #log-likelihood
         derivatives = {symbol: sp.lambdify([symbols_in_expr], ell.diff(symbol), modules = jax_modules) for symbol in symbols_in_expr}
         evaluated_derivatives = [derivatives[symbol](p) for symbol in symbols_in_expr]
-        # print("evaluated derivatives in kernels.py")
-        # print(evaluated_derivatives)
         return jnp.asarray(evaluated_derivatives)
         
     @jit
