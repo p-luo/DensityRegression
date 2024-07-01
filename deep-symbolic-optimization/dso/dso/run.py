@@ -49,6 +49,8 @@ def print_summary(config, runs, messages):
         text += 'Dataset              : {}\n'.format(config["task"]["dataset"])
     elif config["task"]["task_type"] == "control":
         text += 'Environment          : {}\n'.format(config["task"]["env"])
+    text += 'Metric               : {}\n'.format(config["task"]["metric"])
+    text += 'Metric Parameters    : {}\n'.format(config["task"]["metric_params"])
     text += 'Starting seed        : {}\n'.format(config["experiment"]["seed"])
     text += 'Runs                 : {}\n'.format(runs)
     if len(messages) > 0:

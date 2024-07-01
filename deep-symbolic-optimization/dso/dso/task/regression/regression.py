@@ -236,7 +236,7 @@ class RegressionTask(HierarchicalTask):
                 return -1.0
             r = self.metric(self.y_train, y_hat, candidate)
         else:
-            print(p.sympy_expr)
+            # print(p.sympy_expr)
             r = self.metric(self.y_train, y_hat)
 
         # Direct reward noise

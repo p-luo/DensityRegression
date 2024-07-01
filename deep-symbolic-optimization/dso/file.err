@@ -1,0 +1,32 @@
+nohup: ignoring input
+WARNING:jax._src.lib.xla_bridge:No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/site-packages/numpy/core/fromnumeric.py:3441: RuntimeWarning: Mean of empty slice.
+  out=out, **kwargs)
+/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/site-packages/numpy/core/_methods.py:189: RuntimeWarning: invalid value encountered in double_scalars
+  ret = ret.dtype.type(ret / rcount)
+Traceback (most recent call last):
+  File "/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/home/pl61/density-regression/deep-symbolic-optimization/dso/dso/run.py", line 166, in <module>
+    main()
+  File "/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/site-packages/click/core.py", line 1130, in __call__
+    return self.main(*args, **kwargs)
+  File "/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/site-packages/click/core.py", line 1055, in main
+    rv = self.invoke(ctx)
+  File "/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/site-packages/click/core.py", line 1404, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/home/pl61/miniconda3/envs/cloneREU/lib/python3.7/site-packages/click/core.py", line 760, in invoke
+    return __callback(*args, **kwargs)
+  File "/home/pl61/density-regression/deep-symbolic-optimization/dso/dso/run.py", line 149, in main
+    result, summary_path = train_dso(config)
+  File "/home/pl61/density-regression/deep-symbolic-optimization/dso/dso/run.py", line 33, in train_dso
+    result = model.train()
+  File "/home/pl61/density-regression/deep-symbolic-optimization/dso/dso/core.py", line 114, in train
+    result = self.train_one_step()
+  File "/home/pl61/density-regression/deep-symbolic-optimization/dso/dso/core.py", line 95, in train_one_step
+    self.trainer.run_one_step(override)
+  File "/home/pl61/density-regression/deep-symbolic-optimization/dso/dso/train.py", line 434, in run_one_step
+    if self.early_stopping and self.p_r_best.evaluate.get("success"):
+AttributeError: 'NoneType' object has no attribute 'evaluate'

@@ -448,7 +448,10 @@ class Program(object):
 
             # Optimize any PlaceholderConstants
             self.optimize()
-
+            print("expression:")
+            print(self.sympy_expr)
+            print("reward function:")
+            print(self.task.reward_function(self))
             # Return final reward after optimizing
             return self.task.reward_function(self)
 

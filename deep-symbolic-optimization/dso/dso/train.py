@@ -288,7 +288,16 @@ class Trainer():
             Program.cache.update(pool_p_dict)
 
         # Compute rewards (or retrieve cached rewards)
-        r = np.array([p.r for p in programs])
+        l = len(programs)
+        print(l)
+        empty = np.empty(l)
+        for i in range(l):
+            empty[i] = programs[i].r
+            print(i)
+        r = empty
+        # r = np.array([p.r for p in programs])
+        print("length: " + str(len(r)))
+        print("finished with r")
         
         # Back up programs to save them properly later
         controller_programs = programs.copy() if self.logger.save_token_count else None
@@ -431,6 +440,8 @@ class Trainer():
 
 
         # Stop if early stopping criteria is met
+        print(self.p_r_best.evaluate.get("success"))
+        print(self.early_stopping)
         if self.early_stopping and self.p_r_best.evaluate.get("success"):
             print("[{}] Early stopping criteria met; breaking early.".format(get_duration(start_time)))
             self.done = True

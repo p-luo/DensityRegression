@@ -6,8 +6,8 @@
       // This can either be (1) the name of the benchmark dataset (see
       // benchmarks.csv for a list of supported benchmarks) or (2) a path to a
       // CSV file containing the data.
-      // "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1).csv",
-      "dataset" : "Nguyen-1",
+      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1).csv",
+      // "dataset" : "Nguyen-1",
 
       // To customize a function set, edit this! See functions.py for a list of
       // supported functions. Note "const" will add placeholder constants that
