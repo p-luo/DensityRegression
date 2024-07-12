@@ -28,7 +28,7 @@ class RegressionTask(HierarchicalTask):
 
     task_type = "regression"
 
-    def __init__(self, function_set, dataset, metric="inv_nrmse",
+    def __init__(self, function_set, dataset, support, metric="inv_nrmse",
                  metric_params=(1.0,), extra_metric_test=None,
                  extra_metric_test_params=(), reward_noise=0.0,
                  reward_noise_type="r", threshold=1e-12,
@@ -209,11 +209,17 @@ class RegressionTask(HierarchicalTask):
         # Compute estimated values
         y_hat = p.execute(self.X_train) #Maybe if inv_stein, then we don't need to compute this -- structure if else such that if inv_stein this line gets skipped
         # print("DATA" + str(y_hat))
-
         # For invalid expressions, return invalid_reward
+        # print(optimizing)
+        # print(p.sympy_expr)
+        print(p.invalid)
         if p.invalid:
+            ret = -1.0 if optimizing else self.invalid_reward
+            # print("invalid p, reward is" + str(ret))
+            # print("invalid expression: ")
+            # print(p.sympy_expr)
             return -1.0 if optimizing else self.invalid_reward
-
+        # print("valid p")
         # Observation noise
         # For reward_noise_type == "y_hat", success must always be checked to
         # ensure success cases aren't overlooked due to noise. If successful,
@@ -222,21 +228,17 @@ class RegressionTask(HierarchicalTask):
             if p.evaluate.get("success"):
                 return self.max_reward
             y_hat += self.rng.normal(loc=0, scale=self.scale, size=y_hat.shape)
-
         # Compute and return neg_nrmse for constant optimization
         if optimizing:
             return self.const_opt_metric(self.y_train, y_hat)
-
+        
         #Compute metric
         if self.metric_name == "inv_stein":
             candidate = p.sympy_expr
-            # print("expression:")
-            print(candidate)
             if candidate.is_constant():
                 return -1.0
             r = self.metric(self.y_train, y_hat, candidate)
         else:
-            # print(p.sympy_expr)
             r = self.metric(self.y_train, y_hat)
 
         # Direct reward noise
@@ -251,6 +253,7 @@ class RegressionTask(HierarchicalTask):
                 r /= np.sqrt(1 + 12 * self.scale ** 2)
         # print("(made it to end of reward_function, regression,py) r:")
         # print(r)
+        # if function not bounded on support return -1.0
         return r
 
     def evaluate(self, p):
@@ -399,7 +402,7 @@ def make_regression_metric(name, y_train, *args):
         "spearman" :    (lambda y, y_hat : max(1e-5,stats.spearmanr(y, y_hat)[0]),
                         0),
         
-        "inv_stein" :   (lambda y, y_hat, expr : 1/(1 + (stein_discrepancy(y, expr))), 0) #Should maybe put a parameter in here, like inv_nrmse does
+        "inv_stein" :   (lambda y, y_hat, expr : 1/(1 + args[0]*np.abs(stein_discrepancy(y, expr))), 1) #Should maybe put a parameter in here, like inv_nrmse does
         
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }
@@ -423,7 +426,7 @@ def make_regression_metric(name, y_train, *args):
         "fraction" : 0.0,
         "pearson" : 0.0,
         "spearman" : 0.0,
-        "inv_stein" : 0.0
+        "inv_stein" : -2.0
     }
     invalid_reward = all_invalid_rewards[name]
 

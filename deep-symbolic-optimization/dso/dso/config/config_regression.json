@@ -6,21 +6,22 @@
       // This can either be (1) the name of the benchmark dataset (see
       // benchmarks.csv for a list of supported benchmarks) or (2) a path to a
       // CSV file containing the data.
-      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1).csv",
+      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1)20.csv",
       // "dataset" : "Nguyen-1",
-
       // To customize a function set, edit this! See functions.py for a list of
       // supported functions. Note "const" will add placeholder constants that
       // will be optimized within the training loop. This will considerably
       // increase runtime.
+      "support" : [0,1], //Should be of the form [L,U] where L and U are the lower and upper bounds of the support. If left argument is blank, then it will be -infty. If right argument is blank then it will be infty.
       "function_set": ["add", "sub", "mul", "div", "exp", "log"], //Removed sin and cos
+      //toy example (uniform or normal): just make sure whole pipeline works
+      //later, enrich the function_set 
 
       // Metric to be used for the reward function. See regression.py for
       // supported metrics.
       // "metric" : "inv_nrmse",
-      // "metric_params" : [1.0], // For inv_nrmse, it's "metric_params" : [1.0]
       "metric" : "inv_stein",
-      "metric_params" : [], // For inv_nrmse, it's "metric_params" : [1.0]
+      "metric_params" : [1.0], // For inv_nrmse, it's "metric_params" : [1.0]
 
       // Optional alternate metric to be used at evaluation time.
       "extra_metric_test" : null,
@@ -111,6 +112,12 @@
    // prior must explicitly be turned "on" or it will not be used. See
    // config_common.json for descriptions of each prior.
    "prior": {
+      "relational" : {
+         "targets" : ["exp", "log"],
+         "effectors" : ["exp", "log"],
+         "relationship" : "child",
+         "on" : true
+      },
       "length" : {
          "min_" : 4,
          "max_" : 64,
@@ -145,5 +152,19 @@
       "domain_range" : {
          "on" : false
       }
+   //    prior_dict = {
+   //       "relational" : RelationalConstraint,
+   //       "length" : LengthConstraint,
+   //       "repeat" : RepeatConstraint,
+   //       "inverse" : InverseUnaryConstraint,
+   //       "trig" : TrigConstraint,
+   //       "const" : ConstConstraint,
+   //       "no_inputs" : NoInputsConstraint,
+   //       "soft_length" : SoftLengthPrior,
+   //       "uniform_arity" : UniformArityPrior,
+   //       "domain_range" : DomainRangeConstraint,
+   //       "language_model" : LanguageModelPrior,
+   //       "multi_discrete" : MultiDiscreteConstraint
+   //   }
    }
 }

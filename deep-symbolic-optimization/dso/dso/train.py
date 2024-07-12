@@ -288,15 +288,15 @@ class Trainer():
             Program.cache.update(pool_p_dict)
 
         # Compute rewards (or retrieve cached rewards)
-        l = len(programs)
-        print(l)
+        l = len(programs) #Should be 1000
         empty = np.empty(l)
+        nan_index = -1
         for i in range(l):
             empty[i] = programs[i].r
             print(i)
         r = empty
         # r = np.array([p.r for p in programs])
-        print("length: " + str(len(r)))
+        print(r)
         print("finished with r")
         
         # Back up programs to save them properly later
@@ -324,7 +324,8 @@ class Trainer():
         s_full = s
         actions_full = actions
         invalid_full = invalid
-        r_max = np.max(r)
+        r_max = np.nanmax(r)
+        print("r_max: " + str(r_max))
         
         """
         Apply risk-seeking policy gradient: compute the empirical quantile of
@@ -420,9 +421,12 @@ class Trainer():
             self.memory_queue.push_batch(sampled_batch, programs)
 
         # Update new best expression
+        print(self.r_best)
         if r_max > self.r_best:
+            print("hihihi")
             self.r_best = r_max
-            self.p_r_best = programs[np.argmax(r)]
+            print("best index: " + str(np.nanargmax(r)))
+            self.p_r_best = programs[np.nanargmax(r)]
 
             # Print new best expression
             if self.verbose or self.debug:
@@ -440,8 +444,9 @@ class Trainer():
 
 
         # Stop if early stopping criteria is met
-        print(self.p_r_best.evaluate.get("success"))
-        print(self.early_stopping)
+        # print(self.p_r_best.evaluate.get("success"))
+        # print(self.early_stopping)
+        print(self.p_r_best.r)
         if self.early_stopping and self.p_r_best.evaluate.get("success"):
             print("[{}] Early stopping criteria met; breaking early.".format(get_duration(start_time)))
             self.done = True

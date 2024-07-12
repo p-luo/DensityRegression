@@ -298,8 +298,6 @@ class DSOSteinKernel(BaseAutoDiffKernel):
             'ceiling': jnp.ceil,
             'floor': jnp.floor,
             'pow': jnp.power,
-            'mod': jnp.mod,
-            # Add more mappings as needed
         }
         symbols_in_expr = sorted(list(self.distribution.free_symbols), key=lambda s: s.name)
         ell = sp.log(self.distribution) #log-likelihood
