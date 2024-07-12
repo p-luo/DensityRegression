@@ -270,9 +270,18 @@ class Program(object):
             In a single-object Program, returns just an array. In a multi-object Program, returns a list of arrays.
         """
         if not Program.protected:
+            # print("program not protected")
+            # print(Program.sympy_expr)
+            # Program.sympy_expr = sp.log(Program.sympy_expr)
+            # print(Program.sympy_expr)
             result, self.invalid, self.error_node, self.error_type = Program.execute_function(self.traversal, X)
         else:
             result = Program.execute_function(self.traversal, X)
+        
+        # ret = np.log(result)
+        # if np.isnan(ret).any():
+        #     self.invalid = True
+            
         return result
 
     def optimize(self):
@@ -494,11 +503,14 @@ class Program(object):
             expr = tree.__repr__()
         return expr
 
+    def simplify(self):
+        return self.sympy_expr.expand(force = True)
+    
     def pretty(self):
         """Returns pretty printed string of the program"""
 
         if self.task.task_type != "binding":
-            return U.pretty(self.sympy_expr)
+            return U.pretty(self.simplify())
         else:
             return None
 

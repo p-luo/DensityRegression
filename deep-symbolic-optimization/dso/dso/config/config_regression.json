@@ -19,8 +19,8 @@
 
       // Metric to be used for the reward function. See regression.py for
       // supported metrics.
-      // "metric" : "inv_nrmse",
-      "metric" : "inv_stein",
+      "metric" : "inv_nrmse",
+      // "metric" : "inv_stein",
       "metric_params" : [1.0], // For inv_nrmse, it's "metric_params" : [1.0]
 
       // Optional alternate metric to be used at evaluation time.
@@ -112,7 +112,7 @@
    // prior must explicitly be turned "on" or it will not be used. See
    // config_common.json for descriptions of each prior.
    "prior": {
-      "relational" : {
+      "relational" : { // Constrain (any of) `targets` from being the `relationship` of (any of)`effectors`. (which is fine for now since it intersects with the inverse constraint but might be hard to customize later)
          "targets" : ["exp", "log"],
          "effectors" : ["exp", "log"],
          "relationship" : "child",

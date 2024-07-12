@@ -235,9 +235,9 @@ class RegressionTask(HierarchicalTask):
         #Compute metric
         if self.metric_name == "inv_stein":
             candidate = p.sympy_expr
-            if candidate.is_constant():
+            if candidate.is_constant(): #See why this is throwing an error, later
                 return -1.0
-            r = self.metric(self.y_train, y_hat, candidate)
+            r = self.metric(self.y_train, candidate)
         else:
             r = self.metric(self.y_train, y_hat)
 
@@ -402,7 +402,7 @@ def make_regression_metric(name, y_train, *args):
         "spearman" :    (lambda y, y_hat : max(1e-5,stats.spearmanr(y, y_hat)[0]),
                         0),
         
-        "inv_stein" :   (lambda y, y_hat, expr : 1/(1 + args[0]*np.abs(stein_discrepancy(y, expr))), 1) #Should maybe put a parameter in here, like inv_nrmse does
+        "inv_stein" :   (lambda y, expr : 1/(1 + args[0]*np.abs(stein_discrepancy(y, expr))), 1) #Should maybe put a parameter in here, like inv_nrmse does
         
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }

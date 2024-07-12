@@ -147,7 +147,6 @@ class DeepSymbolicOptimizer():
         self.config = defaultdict(dict, config)
         self.config_task = self.config["task"]
         self.config_prior = self.config["prior"]
-        print(self.config_prior)
         self.config_logger = self.config["logging"]
         self.config_training = self.config["training"]
         self.config_state_manager = self.config["state_manager"]
