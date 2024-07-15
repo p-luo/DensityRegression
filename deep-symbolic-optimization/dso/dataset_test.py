@@ -1,13 +1,16 @@
 import numpy as np
+
 from dso.distributions import Gaussian
 from dso.kernels import *
 from dso.discrepancies import DSOKernelSteinDiscrepancy
 
 import sympy as sp
+from scipy import stats
 
 gaussian_kernel = GaussianKernel(sigma=0.01) 
 
 x = sp.symbols('x')
+# A few densities that were outputted by the DSO algorithm. Some of them return nan values.
 # density = sp.exp(sp.log(sp.log(x))**2/x)
 # density = sp.exp(x)*sp.log(sp.log(x**2 + x - sp.log(sp.log(sp.log(sp.log(x))))))
 density = sp.log(x + sp.exp(x**2))
@@ -21,10 +24,19 @@ DSOstein_kernel = DSOSteinKernel(
     distribution=density
 )
 
-N = 200
-iters = 20
-num = 20
-reward = []
+def reward_function(s):
+    return 0 if s <= -2 else 1/(1+np.abs(s))
+    # return 1/(1+np.abs(s))
+
+def aggregate(arr):
+    # return np.median(arr)
+    return np.mean(arr)
+
+N = 200 #Size of dataset
+iters = 20 #Number of times that data is sampled and then an estimate of S(p,q) is computed. Then it computes and records the reward function. After the inner for loop, it outputs the average reward.
+num = 20 #Number of times that the above algorithm is run
+reward = [] 
+rewards = []
 ss = DSOKernelSteinDiscrepancy(DSO_stein_kernel = DSOstein_kernel)
 for _ in range(num):
     reward = []
@@ -32,5 +44,9 @@ for _ in range(num):
         samples = np.random.normal(0, 1, N)
         data = np.asarray(samples).reshape(-1,1)
         cur = ss.compute(data)
-        reward.append(1/(1+np.abs(cur)))
-    print(np.mean(reward))
+        # print(cur) #Will output the estimated Stein discrepancy, using samples
+        reward.append(reward_function(cur))
+    rewards.append(aggregate(reward))
+    print(aggregate(reward))
+    
+print(stats.describe(rewards))
