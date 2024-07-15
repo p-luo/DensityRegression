@@ -207,19 +207,12 @@ class RegressionTask(HierarchicalTask):
                 p.traversal[p.poly_pos] = self.poly_optimizer.fit(self.X_train, poly_data_y)
 
         # Compute estimated values
-        y_hat = p.execute(self.X_train) #Maybe if inv_stein, then we don't need to compute this -- structure if else such that if inv_stein this line gets skipped
-        # print("DATA" + str(y_hat))
-        # For invalid expressions, return invalid_reward
-        # print(optimizing)
-        # print(p.sympy_expr)
-        print(p.invalid)
+        if not self.metric_name == "inv_stein":
+            y_hat = p.execute(self.X_train) #Maybe if inv_stein, then we don't need to compute this -- structure if else such that if inv_stein this line gets skipped
+            
         if p.invalid:
-            ret = -1.0 if optimizing else self.invalid_reward
-            # print("invalid p, reward is" + str(ret))
-            # print("invalid expression: ")
-            # print(p.sympy_expr)
             return -1.0 if optimizing else self.invalid_reward
-        # print("valid p")
+        
         # Observation noise
         # For reward_noise_type == "y_hat", success must always be checked to
         # ensure success cases aren't overlooked due to noise. If successful,

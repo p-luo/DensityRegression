@@ -270,17 +270,12 @@ class Program(object):
             In a single-object Program, returns just an array. In a multi-object Program, returns a list of arrays.
         """
         if not Program.protected:
-            # print("program not protected")
-            # print(Program.sympy_expr)
-            # Program.sympy_expr = sp.log(Program.sympy_expr)
-            # print(Program.sympy_expr)
             result, self.invalid, self.error_node, self.error_type = Program.execute_function(self.traversal, X)
         else:
             result = Program.execute_function(self.traversal, X)
         
-        # ret = np.log(result)
-        # if np.isnan(ret).any():
-        #     self.invalid = True
+        if (result < 0).any():
+            self.invalid = True
             
         return result
 
