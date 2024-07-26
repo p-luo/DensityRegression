@@ -288,16 +288,16 @@ class Trainer():
             Program.cache.update(pool_p_dict)
 
         # Compute rewards (or retrieve cached rewards)
-        l = len(programs) #Should be 1000
-        empty = np.empty(l)
-        nan_index = -1
-        for i in range(l):
+        length = len(programs) #Should be 1000
+        empty = np.empty(length)
+        mod = 100
+        for i in range(length):
             empty[i] = programs[i].r
-            print(i)
+            # programs[i].print_stats()
+            if i % mod == 0:
+                print("iteration " + str(i) + " done")
         r = empty
         # r = np.array([p.r for p in programs])
-        print(r)
-        print("finished with r")
         
         # Back up programs to save them properly later
         controller_programs = programs.copy() if self.logger.save_token_count else None
@@ -325,15 +325,16 @@ class Trainer():
         actions_full = actions
         invalid_full = invalid
         r_max = np.nanmax(r)
-        print("r_max: " + str(r_max))
         
         """
         Apply risk-seeking policy gradient: compute the empirical quantile of
         rewards and filter out programs with lesser reward.
         """
+        # import pdb; pdb.set_trace()
         if self.epsilon is not None and self.epsilon < 1.0:
             # Compute reward quantile estimate
             if self.use_memory: # Memory-augmented quantile
+                print(self.epsilon)
                 # Get subset of Programs not in buffer
                 unique_programs = [p for p in programs \
                                    if p.str not in self.memory_queue.unique_items]
@@ -363,10 +364,10 @@ class Trainer():
                 quantile = weighted_quantile(values=combined_r, weights=combined_w, q=1 - self.epsilon)
 
             else: # Empirical quantile
-                quantile = np.quantile(r, 1 - self.epsilon, interpolation="higher")
+                quantile = np.nanquantile(r, 1 - self.epsilon, interpolation="higher")
 
             # Filter quantities whose reward >= quantile
-            keep = r >= quantile
+            keep = r > quantile
             l = l[keep]
             s = list(compress(s, keep))
             invalid = invalid[keep]
@@ -421,12 +422,15 @@ class Trainer():
             self.memory_queue.push_batch(sampled_batch, programs)
 
         # Update new best expression
-        print(self.r_best)
         if r_max > self.r_best:
-            print("hihihi")
             self.r_best = r_max
-            print("best index: " + str(np.nanargmax(r)))
-            self.p_r_best = programs[np.nanargmax(r)]
+            np.set_printoptions(suppress=True,precision=8)
+            print(r)
+            print("number of expressions to be printed")
+            print(len(programs))
+            for p in programs:
+                print(p.sympy_expr)
+            self.p_r_best = programs[np.argmax(r)]
 
             # Print new best expression
             if self.verbose or self.debug:
@@ -463,7 +467,6 @@ class Trainer():
 
         # Increment the iteration counter
         self.iteration += 1
-        print("END OF FN")
 
     def save(self, save_path):
         """

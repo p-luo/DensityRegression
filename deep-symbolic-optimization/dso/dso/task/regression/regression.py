@@ -207,8 +207,10 @@ class RegressionTask(HierarchicalTask):
                 p.traversal[p.poly_pos] = self.poly_optimizer.fit(self.X_train, poly_data_y)
 
         # Compute estimated values
-        if not self.metric_name == "inv_stein":
-            y_hat = p.execute(self.X_train) #Maybe if inv_stein, then we don't need to compute this -- structure if else such that if inv_stein this line gets skipped
+        y_hat = p.execute(self.X_train)
+        # if not self.metric_name == "inv_stein":
+        #     y_hat = p.execute(self.X_train) #Maybe if inv_stein, then we don't need to compute this -- structure if else such that if inv_stein this line gets skipped.
+        #ok but i think other variables get changed in place...
             
         if p.invalid:
             return -1.0 if optimizing else self.invalid_reward
@@ -228,12 +230,16 @@ class RegressionTask(HierarchicalTask):
         #Compute metric
         if self.metric_name == "inv_stein":
             candidate = p.sympy_expr
-            if candidate.is_constant(): #See why this is throwing an error, later
-                return -1.0
+            # if candidate.is_constant(): #See why this is throwing an error, later
+            #     # print(candidate)
+            #     # print("CONST")
+            #     # print(self.y_train)
+            #     return self.invalid_reward
+            
             r = self.metric(self.y_train, candidate)
         else:
             r = self.metric(self.y_train, y_hat)
-
+        
         # Direct reward noise
         # For reward_noise_type == "r", success can for ~max_reward metrics be
         # confirmed before adding noise. If successful, must return np.inf to
@@ -244,9 +250,7 @@ class RegressionTask(HierarchicalTask):
             r += self.rng.normal(loc=0, scale=self.scale)
             if self.normalize_variance:
                 r /= np.sqrt(1 + 12 * self.scale ** 2)
-        # print("(made it to end of reward_function, regression,py) r:")
-        # print(r)
-        # if function not bounded on support return -1.0
+        # if function not bounded on support return -1.0 or self.invalid_reward
         return r
 
     def evaluate(self, p):

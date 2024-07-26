@@ -274,7 +274,11 @@ class Program(object):
         else:
             result = Program.execute_function(self.traversal, X)
         
-        if (result < 0).any():
+        # if np.isnan(result).any():
+        #     print("nan values")
+            
+        if (result < 0).any() and not self.invalid:
+            # print("negative values")
             self.invalid = True
             
         return result
@@ -452,10 +456,10 @@ class Program(object):
 
             # Optimize any PlaceholderConstants
             self.optimize()
-            print("expression:")
-            print(self.sympy_expr)
-            print("reward function:")
-            print(self.task.reward_function(self))
+            # print("expression:")
+            # print(self.sympy_expr)
+            # print("reward function:")
+            # print(self.task.reward_function(self))
             # Return final reward after optimizing
             return self.task.reward_function(self)
 
@@ -524,19 +528,6 @@ class Program(object):
         if self.task.task_type != 'binding':
             print("\tExpression:") 
             print("{}\n".format(indent(self.pretty(), '\t  ')))
-            # print("\tDifferentated Expression:")
-            # # print(self.sympy_expr)
-            # # print(self.sympy_expr.free_symbols)
-            # derivatives = {symbol: sp.log(self.sympy_expr).diff(symbol) for symbol in self.sympy_expr.free_symbols}
-            # # if self.task.task_type != "binding":
-            # #     return U.pretty(self.sympy_expr)
-            # # else:
-            # #     return None
-            # for key, value in derivatives.items():
-            #     print("\tExpression for ") 
-            #     print("{}\n".format(indent(U.pretty(value), '\t  ')))
-                
-            # print(derivatives)
 
     def __repr__(self):
         """Prints the program's traversal"""

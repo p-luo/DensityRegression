@@ -13,10 +13,12 @@ x = sp.symbols('x')
 # A few densities that were outputted by the DSO algorithm. Some of them return nan values.
 # density = sp.exp(sp.log(sp.log(x))**2/x)
 # density = sp.exp(x)*sp.log(sp.log(x**2 + x - sp.log(sp.log(sp.log(sp.log(x))))))
-density = sp.log(x + sp.exp(x**2))
+# density = x**2 + (x*sp.exp(x))/(x**2+sp.exp(1)*x)
+density = 1.5-sp.exp(-x**2+0.1*x)
 # density = sp.log(sp.log(x*(-x + sp.log(x))))
 # density = sp.log(sp.log(x**2/sp.log(2*x) - x))
 # density = sp.exp(-(x**2) / 2) 
+# density = sp.cos(x)
 
 #Defining the DSO-compatible Stein Kernel, which takes as parameters a kernel object from kernels.py, and a sympy expression (the PDF) 
 DSOstein_kernel = DSOSteinKernel(
@@ -33,8 +35,8 @@ def aggregate(arr):
     return np.mean(arr)
 
 N = 200 #Size of dataset
-iters = 20 #Number of times that data is sampled and then an estimate of S(p,q) is computed. Then it computes and records the reward function. After the inner for loop, it outputs the average reward.
-num = 20 #Number of times that the above algorithm is run
+iters = 100 #Number of times that data is sampled and then an estimate of S(p,q) is computed. Then it computes and records the reward function. After the inner for loop, it outputs the average reward.
+num = 1 #Number of times that the above algorithm is run
 reward = [] 
 rewards = []
 ss = DSOKernelSteinDiscrepancy(DSO_stein_kernel = DSOstein_kernel)
@@ -46,7 +48,8 @@ for _ in range(num):
         cur = ss.compute(data)
         # print(cur) #Will output the estimated Stein discrepancy, using samples
         reward.append(reward_function(cur))
-    rewards.append(aggregate(reward))
-    print(aggregate(reward))
-    
-print(stats.describe(rewards))
+    # rewards.append(aggregate(reward))
+    # print(aggregate(reward))
+
+# print(reward)
+print(stats.describe(reward))

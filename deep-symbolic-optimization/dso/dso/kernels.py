@@ -300,6 +300,9 @@ class DSOSteinKernel(BaseAutoDiffKernel):
             'pow': jnp.power,
         }
         symbols_in_expr = sorted(list(self.distribution.free_symbols), key=lambda s: s.name)
+        if(len(symbols_in_expr) == 0):
+            return jnp.asarray([0])
+        
         ell = sp.log(self.distribution) #log-likelihood
         derivatives = {symbol: sp.lambdify([symbols_in_expr], ell.diff(symbol), modules = jax_modules) for symbol in symbols_in_expr}
         evaluated_derivatives = [derivatives[symbol](p) for symbol in symbols_in_expr]

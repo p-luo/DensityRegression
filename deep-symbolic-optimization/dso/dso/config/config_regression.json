@@ -6,14 +6,14 @@
       // This can either be (1) the name of the benchmark dataset (see
       // benchmarks.csv for a list of supported benchmarks) or (2) a path to a
       // CSV file containing the data.
-      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1)20.csv",
+      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1)200.csv",
       // "dataset" : "Nguyen-1",
       // To customize a function set, edit this! See functions.py for a list of
       // supported functions. Note "const" will add placeholder constants that
       // will be optimized within the training loop. This will considerably
       // increase runtime.
       "support" : [0,1], //Should be of the form [L,U] where L and U are the lower and upper bounds of the support. If left argument is blank, then it will be -infty. If right argument is blank then it will be infty.
-      "function_set": ["add", "sub", "mul", "div", "exp", "log"], //Removed sin and cos
+      "function_set": ["add", "sub", "mul", "div", "exp", "log", "const"], //Removed sin and cos
       //toy example (uniform or normal): just make sure whole pipeline works
       //later, enrich the function_set 
 
@@ -29,7 +29,7 @@
 
       // NRMSE threshold for early stopping. This is useful for noiseless
       // benchmark problems when DSO discovers the true solution.
-      "threshold" : 1e-12,
+      "threshold" : 1e-5,
 
       // With protected=false, floating-point errors (e.g. log of negative
       // number) will simply returns a minimal reward. With protected=true,
@@ -115,7 +115,7 @@
       "relational" : { // Constrain (any of) `targets` from being the `relationship` of (any of)`effectors`. (which is fine for now since it intersects with the inverse constraint but might be hard to customize later)
          "targets" : ["exp", "log"],
          "effectors" : ["exp", "log"],
-         "relationship" : "child",
+         "relationship" : "descendant",
          "on" : true
       },
       "length" : {
