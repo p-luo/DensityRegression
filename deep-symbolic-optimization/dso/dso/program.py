@@ -502,8 +502,20 @@ class Program(object):
             expr = tree.__repr__()
         return expr
 
+    def round_constants(self, expr, precision):
+        if expr.is_Atom:
+            if expr.is_Number:
+                # Use the float conversion and rounding for numbers, and ensure the result is a Rational if necessary
+                rounded_value = round(float(expr), precision)
+                if rounded_value.is_integer():
+                    return int(rounded_value)
+                return sp.Float(rounded_value)
+            return expr
+        # Apply rounding to all arguments in the expression
+        return expr.func(*[self.round_constants(arg, precision) for arg in expr.args])
+
     def simplify(self):
-        return self.sympy_expr.expand(force = True)
+        return self.round_constants(self.sympy_expr.expand(force = True), 5)
     
     def pretty(self):
         """Returns pretty printed string of the program"""
