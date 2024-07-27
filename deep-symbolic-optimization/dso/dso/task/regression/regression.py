@@ -28,7 +28,7 @@ class RegressionTask(HierarchicalTask):
 
     task_type = "regression"
 
-    def __init__(self, function_set, dataset, support, metric="inv_nrmse",
+    def __init__(self, function_set, dataset, support, display_precision, metric="inv_nrmse",
                  metric_params=(1.0,), extra_metric_test=None,
                  extra_metric_test_params=(), reward_noise=0.0,
                  reward_noise_type="r", threshold=1e-12,

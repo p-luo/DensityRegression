@@ -3,8 +3,10 @@ import csv
 import os
 
 N = 500
+mu = 0.0
+var = 0.5
 # Step 1: Generate samples
-samples = np.random.normal(0.0, 1.0, N)
+samples = np.random.normal(mu, np.sqrt(var), N)
 # samples = np.random.uniform(0.0, 1.0, N)
 # samples = np.random.beta(2.0, 5.0, N)
 
@@ -18,7 +20,7 @@ directory = '/home/pl61/density-regression/deep-symbolic-optimization/dso/data' 
 os.makedirs(directory, exist_ok=True)
 
 # Combine the directory path with the file name
-file_path = os.path.join(directory, 'N(0,1)500.csv')
+file_path = os.path.join(directory, 'N(0,0.5)500.csv')
 
 # Step 3: Store the pairs in a CSV file
 with open(file_path, 'w', newline='') as file:
