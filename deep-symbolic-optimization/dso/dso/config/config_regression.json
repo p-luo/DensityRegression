@@ -1,4 +1,9 @@
 {
+   "experiment" : {
+      // Random number seed. Don't forget to change this for multiple runs!
+      "seed" : 0
+   },
+
    "task" : {
       // Deep Symbolic Regression
       "task_type" : "regression",
@@ -6,22 +11,22 @@
       // This can either be (1) the name of the benchmark dataset (see
       // benchmarks.csv for a list of supported benchmarks) or (2) a path to a
       // CSV file containing the data.
-      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,0.5)200.csv",
+      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,0.5)1000.csv",
       // "dataset" : "Nguyen-1",
       // To customize a function set, edit this! See functions.py for a list of
       // supported functions. Note "const" will add placeholder constants that
       // will be optimized within the training loop. This will considerably
       // increase runtime.
-      "support" : [0,1], //Should be of the form [L,U] where L and U are the lower and upper bounds of the support. If left argument is blank, then it will be -infty. If right argument is blank then it will be infty.
+      "support" : [0,1], //Should be of the form [L,U] where L and U are the lower and upper bounds of the support. If left argument is blank, then it will be -infty. If right argument is blank then it will be infty. OK I STILL NEED TO THINK MORE ABOUT HOW TO IMPLEMENT THIS
       "display_precision" : 5, //How many decimal places are displayed for const tokens
-      "function_set": ["add", "sub", "mul", "div", "exp", "log", "const", "n2"], //Removed sin and cos
+      "function_set": ["add", "sub", "mul", "div", "exp", "log", "const"], //Removed sin and cos
       //toy example (uniform or normal): just make sure whole pipeline works
       //later, enrich the function_set 
 
       // Metric to be used for the reward function. See regression.py for
       // supported metrics.
       // "metric" : "inv_nrmse",
-      "metric" : "inv_stein",
+      "metric" : "inv_stein", // 1/(1 + args[0]*np.abs(stein_discrepancy(y, expr))) where args[0] is the parameter below
       "metric_params" : [1.0], // For inv_nrmse, it's "metric_params" : [1.0]
 
       // Optional alternate metric to be used at evaluation time.
@@ -30,7 +35,7 @@
 
       // NRMSE threshold for early stopping. This is useful for noiseless
       // benchmark problems when DSO discovers the true solution.
-      "threshold" : 1e-5,
+      "threshold" : 1e-2, //Will stop when reward > 0.999
 
       // With protected=false, floating-point errors (e.g. log of negative
       // number) will simply returns a minimal reward. With protected=true,
@@ -78,13 +83,13 @@
    // Only the key training hyperparameters are listed here. See
    // config_common.json for the full list.
    "training" : {
-      "n_samples" : 2000000,
-      "batch_size" : 1000,
-      "epsilon" : 0.05,
+      "n_samples" : 10000, //This is equal to batch_size * epochs
+      "batch_size" : 1000, //Number of iterations per epoch
+      "epsilon" : 0.05, //The top epsilon of expression are kept, as measured by reward
 
       // Recommended to set this to as many cores as you can use! Especially if
       // using the "const" token.
-      "n_cores_batch" : 1
+      "n_cores_batch" : 1 
    },
 
    // // Only the key Policy Optimizer hyperparameters are listed here. See
@@ -120,8 +125,8 @@
          "on" : true
       },
       "length" : {
-         "min_" : 4,
-         "max_" : 20,
+         "min_" : 4, //What does this do... when it was set to 4, conznts were still allowed? (ok probably it was const*const+const or smth,...maybe i should print out the traversal each time too...
+         "max_" : 15,
          "on" : true
       },
       "repeat" : {

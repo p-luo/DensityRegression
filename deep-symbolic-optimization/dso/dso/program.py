@@ -456,11 +456,7 @@ class Program(object):
 
             # Optimize any PlaceholderConstants
             self.optimize()
-            # print("expression:")
-            # print(self.sympy_expr)
-            # print("reward function:")
-            # print(self.task.reward_function(self))
-            # Return final reward after optimizing
+            
             return self.task.reward_function(self)
 
     @cached_property
@@ -540,6 +536,12 @@ class Program(object):
         if self.task.task_type != 'binding':
             print("\tExpression:") 
             print("{}\n".format(indent(self.pretty(), '\t  ')))
+            # Z = sp.integrate(self.sympy_expr, (x,-sp.oo,sp.oo))
+            # q = self.sympy_expr / Z
+            # muhat = sp.integrate(x*q, (x,-sp.oo,sp.oo))
+            # sigmasqhat = sp.integrate(x*x*q, (x,-sp.oo,sp.oo)) - muhat**2
+            # print(muhat)
+            # print(sigmasqhat)
 
     def __repr__(self):
         """Prints the program's traversal"""

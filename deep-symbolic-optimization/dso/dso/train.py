@@ -293,6 +293,7 @@ class Trainer():
         mod = 100
         for i in range(length):
             empty[i] = programs[i].r
+            # print(programs[i].sympy_expr)
             # programs[i].print_stats()
             if i % mod == 0:
                 print("iteration " + str(i) + " done")

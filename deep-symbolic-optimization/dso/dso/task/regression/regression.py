@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import sympy as sp
 from scipy import stats
 
 from dso.task import HierarchicalTask
@@ -211,6 +212,13 @@ class RegressionTask(HierarchicalTask):
         # if not self.metric_name == "inv_stein":
         #     y_hat = p.execute(self.X_train) #Maybe if inv_stein, then we don't need to compute this -- structure if else such that if inv_stein this line gets skipped.
         #ok but i think other variables get changed in place...
+        # candidate = p.sympy_expr.expand(force = True)
+        # symbols_in_expr = sorted(list(candidate.free_symbols), key=lambda s: s.name)
+        # for symbol in symbols_in_expr:
+        #     if (sp.limit(candidate, symbol, sp.oo) != 0) or (sp.limit(candidate, symbol, -sp.oo) != 0):
+        #         print(candidate)
+        #         p.invalid = True
+        #         break
             
         if p.invalid:
             return -1.0 if optimizing else self.invalid_reward
@@ -230,11 +238,11 @@ class RegressionTask(HierarchicalTask):
         #Compute metric
         if self.metric_name == "inv_stein":
             candidate = p.sympy_expr
-            # if candidate.is_constant(): #See why this is throwing an error, later
-            #     # print(candidate)
-            #     # print("CONST")
-            #     # print(self.y_train)
-            #     return self.invalid_reward
+            if candidate.expand(force = True).is_constant(): #See why this is throwing an error, later
+                # print(candidate)
+                # print("CONST")
+                # print(self.y_train)
+                return self.invalid_reward
             
             r = self.metric(self.y_train, candidate)
         else:
@@ -293,6 +301,10 @@ class RegressionTask(HierarchicalTask):
 
         return info
 
+def complexity(expr): #Should output the number of tokens used to construct expr...
+    #Should just be the length of the traversal
+    return 0
+
 def stein_discrepancy(data, expr):
     gaussian_kernel = GaussianKernel(sigma=0.01) 
     DSOstein_kernel = DSOSteinKernel(
@@ -303,6 +315,11 @@ def stein_discrepancy(data, expr):
     y = data.reshape(-1, 1)
     return DSOksd.compute(y)
     
+def stein_reward(data, expr, p): #p is the parameter
+    s = stein_discrepancy(data, expr)
+    # return 0 if s <= -2 else 1/(1 + p*np.abs(s))
+    return 1/(1 + p*np.abs(s))
+    return exp(log(1) - log(1 + p*np.abs(s)))
 
 def make_regression_metric(name, y_train, *args):
     """
@@ -399,8 +416,8 @@ def make_regression_metric(name, y_train, *args):
         "spearman" :    (lambda y, y_hat : max(1e-5,stats.spearmanr(y, y_hat)[0]),
                         0),
         
-        "inv_stein" :   (lambda y, expr : 1/(1 + args[0]*np.abs(stein_discrepancy(y, expr))), 1) #Should maybe put a parameter in here, like inv_nrmse does
-        
+        # "inv_stein" :   (lambda y, expr : 0 if stein_discrepancy(y, expr) <= -2 else 1/(1 + args[0]*np.abs(stein_discrepancy(y, expr))), 1) #Should maybe put a parameter in here, like inv_nrmse does
+        "inv_stein" :   (lambda y, expr : stein_reward(y, expr, args[0]), 1)
         # "inv_stein" :   (lambda y, y_hat : np.norm(y - yhat))
     }
 

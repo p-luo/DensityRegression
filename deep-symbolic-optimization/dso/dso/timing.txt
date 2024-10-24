@@ -1,2 +1,4 @@
-200 data samples: 01:38.66 for 1000 iterations
-500 data samples: 03:04.21
+(for 1000 iterations)
+
+200 data samples: 01:38.66 
+500 data samples: 03:04.21 
