@@ -536,12 +536,15 @@ class Program(object):
         if self.task.task_type != 'binding':
             print("\tExpression:") 
             print("{}\n".format(indent(self.pretty(), '\t  ')))
-            # Z = sp.integrate(self.sympy_expr, (x,-sp.oo,sp.oo))
-            # q = self.sympy_expr / Z
-            # muhat = sp.integrate(x*q, (x,-sp.oo,sp.oo))
-            # sigmasqhat = sp.integrate(x*x*q, (x,-sp.oo,sp.oo)) - muhat**2
-            # print(muhat)
-            # print(sigmasqhat)
+            symbols_in_expr = sorted(list(self.sympy_expr.free_symbols), key=lambda s: s.name)
+            if len(symbols_in_expr) > 0:
+                for symbol in symbols_in_expr:
+                    Z = sp.integrate(self.sympy_expr, (symbol,-sp.oo,sp.oo))
+                    q = self.sympy_expr / Z
+                    muhat = sp.integrate(symbol*q, (symbol,-sp.oo,sp.oo))
+                    sigmasqhat = sp.integrate(symbol*symbol*q, (symbol,-sp.oo,sp.oo)) - muhat**2
+                    print("Mean of this density function: " + str(muhat))
+                    print("Variance of this density function: " + str(sigmasqhat))
 
     def __repr__(self):
         """Prints the program's traversal"""
