@@ -537,7 +537,7 @@ class Program(object):
             print("\tExpression:") 
             print("{}\n".format(indent(self.pretty(), '\t  ')))
             symbols_in_expr = sorted(list(self.sympy_expr.free_symbols), key=lambda s: s.name)
-            if len(symbols_in_expr) > 0:
+            if len(symbols_in_expr) > 0 and self.r > 0.99:
                 for symbol in symbols_in_expr:
                     Z = sp.integrate(self.sympy_expr, (symbol,-sp.oo,sp.oo))
                     q = self.sympy_expr / Z

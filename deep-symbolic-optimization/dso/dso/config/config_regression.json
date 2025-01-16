@@ -11,7 +11,7 @@
       // This can either be (1) the name of the benchmark dataset (see
       // benchmarks.csv for a list of supported benchmarks) or (2) a path to a
       // CSV file containing the data.
-      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(0,1)200.csv",
+      "dataset" : "/home/pl61/density-regression/deep-symbolic-optimization/dso/data/N(7.334250891370569,1.0)1000.csv",
       // "dataset" : "Nguyen-1",
       // To customize a function set, edit this! See functions.py for a list of
       // supported functions. Note "const" will add placeholder constants that
@@ -89,7 +89,7 @@
 
       // Recommended to set this to as many cores as you can use! Especially if
       // using the "const" token.
-      "n_cores_batch" : 1 
+      "n_cores_batch" : 4 
    },
 
    // // Only the key Policy Optimizer hyperparameters are listed here. See

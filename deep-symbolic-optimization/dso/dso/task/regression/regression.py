@@ -308,13 +308,13 @@ def complexity(expr): #Should output the number of tokens used to construct expr
 from scipy.spatial.distance import pdist
 def median_heuristic_bandwidth(data) -> float:
     """
-    Calculates the optimal bandwidth for an RBF kernel using the Median Heuristic.
+    Calculates the optimal bandwidth parameter gamma for an RBF kernel using the Median Heuristic.
 
     Parameters:
     - Y (np.ndarray): A 2D numpy array where rows represent samples and columns represent dimensions.
 
     Returns:
-    - float: The bandwidth parameter sigma.
+    - float: The bandwidth parameter sigma
     """
     y = data.reshape(-1, 1)
     pairwise_distances = pdist(y, metric="euclidean")

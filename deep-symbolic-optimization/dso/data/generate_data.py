@@ -3,8 +3,8 @@ import csv
 import os
 
 N = 1000
-mu = 0.0 #mean
-var = 0.5 #sigma^2
+mu = np.random.uniform(0, 10, 1)[0] #mean
+var = 1.0 #sigma^2
 a = 0.0
 b = 1.0
 scale = 1
@@ -25,7 +25,7 @@ os.makedirs(directory, exist_ok=True)
 
 # Combine the directory path with the file name
 # CHANGE THE NAME
-file_path = os.path.join(directory, 'N(0,0.5)1000.csv')
+file_path = os.path.join(directory, 'N(' + str(mu) + ',' + str(var) + ')' + str(N) + '.csv')
 
 # Step 3: Store the pairs in a CSV file
 with open(file_path, 'w', newline='') as file:
